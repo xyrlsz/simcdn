@@ -7,22 +7,22 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
-jobs:
 
+jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         platform:
-          - { goos: "darwin", goarch: "amd64" }
-          - { goos: "darwin", goarch: "arm64" }
-          - { goos: "linux", goarch: "386" }
-          - { goos: "linux", goarch: "amd64" }
-          - { goos: "linux", goarch: "arm" }
-          - { goos: "linux", goarch: "arm64" }
-          - { goos: "windows", goarch: "386" }
-          - { goos: "windows", goarch: "amd64" }
-          - { goos: "windows", goarch: "arm64" }
+        - { goos: "darwin", goarch: "amd64" }
+        - { goos: "darwin", goarch: "arm64" }
+        - { goos: "linux", goarch: "386" }
+        - { goos: "linux", goarch: "amd64" }
+        - { goos: "linux", goarch: "arm" }
+        - { goos: "linux", goarch: "arm64" }
+        - { goos: "windows", goarch: "386" }
+        - { goos: "windows", goarch: "amd64" }
+        - { goos: "windows", goarch: "arm64" }
 
     steps:
     - uses: actions/checkout@v4
@@ -38,7 +38,11 @@ jobs:
         GOARCH: ${{ matrix.platform.goarch }}
       run: |
         mkdir -p bin
-        go build -o bin/simcdn-${{ matrix.platform.goos }}-${{ matrix.platform.goarch }}  
+        if [ "${{ matrix.platform.goos }}" == "windows" ]; then
+          go build -o bin/simcdn-${{ matrix.platform.goos }}-${{ matrix.platform.goarch }}.exe
+        else
+          go build -o bin/simcdn-${{ matrix.platform.goos }}-${{ matrix.platform.goarch }}
+        fi
 
     - name: Test
       run: go test -v ./...
@@ -47,4 +51,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: simcdn-${{ matrix.platform.goos }}-${{ matrix.platform.goarch }}
-        path: bin/simcdn-${{ matrix.platform.goos }}-${{ matrix.platform.goarch }}
+        path: bin/simcdn-${{ matrix.platform.goos }}-${{ matrix.platform.goarch }}${{ matrix.platform.goos == 'windows' && '.exe' || '' }}
