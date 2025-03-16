@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"simcdn/config"
+	"simcdn/logger"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -20,10 +21,10 @@ var (
 	nodeMutex = &sync.Mutex{}
 )
 
-func main() {
+func runSever(conf *config.Config) {
 	gin.SetMode(gin.ReleaseMode)
-	r := gin.Default()
-	conf := config.GetConfig()
+	r := gin.New()
+	r.Use(gin.LoggerWithFormatter(logger.LogFormatter))
 	nodes = conf.NodeHosts
 
 	// 处理动态资源请求
@@ -64,8 +65,27 @@ func main() {
 	})
 
 	// 启动服务器
-	fmt.Printf("CDN server has started on  %s:%d.\n", conf.ListenOn, conf.Port)
+
+	log.Default().Printf("CDN server has started on  %s:%d.\n", conf.ListenOn, conf.Port)
 	if err := r.Run(fmt.Sprintf("%s:%d", conf.ListenOn, conf.Port)); err != nil {
 		log.Default().Fatal(fmt.Sprint("Server failed to start:", err))
+		os.Exit(1)
 	}
+
+}
+
+func main() {
+	conf := config.GetConfig()
+	log.Default().Println("Press Ctrl+C to exit.")
+
+	if conf != nil {
+		go func() {
+			runSever(conf)
+		}()
+		select {}
+	} else {
+		for {
+		}
+	}
+
 }

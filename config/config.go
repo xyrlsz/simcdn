@@ -23,7 +23,7 @@ type Config struct {
 var configData []byte
 
 var (
-	confInstance *Config
+	confInstance *Config = nil
 	confOnce     sync.Once
 )
 
@@ -39,8 +39,7 @@ func initConfig() {
 				log.Default().Panicln("Failed to write config file:", err)
 			}
 			log.Default().Println("Please edit etc/config.yaml.")
-			// os.Exit(0)
-			select {}
+
 		} else if err != nil {
 			log.Default().Panicln("Failed to check config file:", err)
 		} else {
